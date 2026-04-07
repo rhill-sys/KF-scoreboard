@@ -1,0 +1,458 @@
+import { useState, useEffect } from “react”;
+
+const CONFETTI_COLORS = [”#FF6B6B”, “#FFE66D”, “#4ECDC4”, “#45B7D1”, “#96CEB4”, “#FFEAA7”, “#DDA0DD”, “#98D8C8”];
+
+function ConfettiBurst({ trigger }) {
+const [particles, setParticles] = useState([]);
+
+useEffect(() => {
+if (trigger > 0) {
+const newParticles = Array.from({ length: 12 }, (_, i) => ({
+id: Date.now() + i,
+x: 50 + (Math.random() - 0.5) * 30,
+y: 50,
+color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
+angle: Math.random() * 360,
+scale: 0.5 + Math.random() * 0.8,
+}));
+setParticles(newParticles);
+setTimeout(() => setParticles([]), 800);
+}
+}, [trigger]);
+
+return particles.map((p) => (
+<div
+key={p.id}
+style={{
+position: “absolute”,
+left: `${p.x}%`,
+top: `${p.y}%`,
+width: 8,
+height: 8,
+borderRadius: p.id % 2 === 0 ? “50%” : “2px”,
+background: p.color,
+transform: `rotate(${p.angle}deg) scale(${p.scale})`,
+animation: “confettiFall 0.8s ease-out forwards”,
+pointerEvents: “none”,
+zIndex: 100,
+}}
+/>
+));
+}
+
+export default function Scoreboard() {
+const [gabriellaCount, setGabriellaCount] = useState(0);
+const [joelSabrinaCount, setJoelSabrinaCount] = useState(0);
+const [leftBurst, setLeftBurst] = useState(0);
+const [rightBurst, setRightBurst] = useState(0);
+const [leftPulse, setLeftPulse] = useState(false);
+const [rightPulse, setRightPulse] = useState(false);
+
+const handleLeft = () => {
+setGabriellaCount((c) => c + 1);
+setLeftBurst((b) => b + 1);
+setLeftPulse(true);
+setTimeout(() => setLeftPulse(false), 300);
+};
+
+const handleRight = () => {
+setJoelSabrinaCount((c) => c + 1);
+setRightBurst((b) => b + 1);
+setRightPulse(true);
+setTimeout(() => setRightPulse(false), 300);
+};
+
+const total = gabriellaCount + joelSabrinaCount;
+const leftPct = total === 0 ? 50 : (gabriellaCount / total) * 100;
+const rightPct = total === 0 ? 50 : (joelSabrinaCount / total) * 100;
+
+const leader =
+gabriellaCount === joelSabrinaCount
+? null
+: gabriellaCount > joelSabrinaCount
+? “left”
+: “right”;
+
+return (
+<div style={{
+minHeight: “100vh”,
+background: “#0D0D0D”,
+fontFamily: “‘Courier New’, monospace”,
+color: “#F5F5F0”,
+display: “flex”,
+flexDirection: “column”,
+overflow: “hidden”,
+position: “relative”,
+}}>
+<style>{`
+@import url(‘https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap’);
+
+```
+    @keyframes confettiFall {
+      0% { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); }
+      100% { opacity: 0; transform: translateY(-80px) translateX(${Math.random() > 0.5 ? '' : '-'}40px) rotate(720deg) scale(0); }
+    }
+
+    @keyframes pulseGlow {
+      0% { box-shadow: 0 0 0 0 rgba(255,107,107,0.4); }
+      100% { box-shadow: 0 0 0 20px rgba(255,107,107,0); }
+    }
+
+    @keyframes pulseGlowBlue {
+      0% { box-shadow: 0 0 0 0 rgba(78,205,196,0.4); }
+      100% { box-shadow: 0 0 0 20px rgba(78,205,196,0); }
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes numberPop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
+
+    .score-btn:active {
+      transform: scale(0.95) !important;
+    }
+  `}</style>
+
+  {/* Header */}
+  <div style={{
+    textAlign: "center",
+    padding: "20px 16px 10px",
+    animation: "slideIn 0.5s ease-out",
+  }}>
+    <div style={{
+      fontFamily: "'Bebas Neue', sans-serif",
+      fontSize: 28,
+      letterSpacing: 6,
+      color: "#FFE66D",
+      textTransform: "uppercase",
+    }}>
+      Mix-Up Scoreboard
+    </div>
+    <div style={{
+      fontSize: 11,
+      color: "#666",
+      letterSpacing: 2,
+      marginTop: 2,
+      fontFamily: "'Space Mono', monospace",
+    }}>
+      LIVE CONFUSION TRACKER
+    </div>
+  </div>
+
+  {/* Tug-of-war bar */}
+  <div style={{
+    margin: "8px 20px 4px",
+    height: 6,
+    borderRadius: 3,
+    background: "#1a1a1a",
+    overflow: "hidden",
+    display: "flex",
+  }}>
+    <div style={{
+      width: `${leftPct}%`,
+      background: "linear-gradient(90deg, #FF6B6B, #FF8E8E)",
+      transition: "width 0.4s ease",
+      borderRadius: "3px 0 0 3px",
+    }} />
+    <div style={{
+      width: `${rightPct}%`,
+      background: "linear-gradient(90deg, #4ECDC4, #45B7D1)",
+      transition: "width 0.4s ease",
+      borderRadius: "0 3px 3px 0",
+    }} />
+  </div>
+  <div style={{
+    display: "flex",
+    justifyContent: "space-between",
+    padding: "0 20px",
+    fontSize: 10,
+    fontFamily: "'Space Mono', monospace",
+    color: "#555",
+  }}>
+    <span>{total > 0 ? `${Math.round(leftPct)}%` : "—"}</span>
+    <span>{total > 0 ? `${Math.round(rightPct)}%` : "—"}</span>
+  </div>
+
+  {/* Main scoreboard area */}
+  <div style={{
+    flex: 1,
+    display: "flex",
+    gap: 12,
+    padding: "12px 16px",
+    minHeight: 0,
+  }}>
+
+    {/* LEFT — Gabriella */}
+    <div style={{
+      flex: 1,
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      background: "linear-gradient(180deg, #1a1212 0%, #0D0D0D 100%)",
+      borderRadius: 16,
+      border: leader === "left" ? "2px solid #FF6B6B" : "2px solid #1a1a1a",
+      padding: "16px 8px",
+      position: "relative",
+      overflow: "hidden",
+      transition: "border-color 0.3s",
+    }}>
+      <ConfettiBurst trigger={leftBurst} />
+
+      {leader === "left" && (
+        <div style={{
+          position: "absolute",
+          top: 8,
+          right: 8,
+          fontSize: 16,
+        }}>👑</div>
+      )}
+
+      <div style={{
+        fontFamily: "'Bebas Neue', sans-serif",
+        fontSize: 20,
+        color: "#FF6B6B",
+        letterSpacing: 2,
+        textAlign: "center",
+      }}>
+        GABRIELLA
+      </div>
+
+      <div style={{
+        fontSize: 10,
+        color: "#666",
+        textAlign: "center",
+        fontFamily: "'Space Mono', monospace",
+        margin: "4px 0 2px",
+        lineHeight: 1.4,
+        padding: "0 4px",
+      }}>
+        confuses Johel<br/>with Sabrina
+      </div>
+
+      <div style={{
+        fontFamily: "'Bebas Neue', sans-serif",
+        fontSize: 80,
+        color: "#F5F5F0",
+        lineHeight: 1,
+        margin: "auto 0",
+        animation: leftPulse ? "numberPop 0.3s ease" : "none",
+        textShadow: gabriellaCount > 0 ? "0 0 30px rgba(255,107,107,0.3)" : "none",
+      }}>
+        {gabriellaCount}
+      </div>
+
+      <button
+        className="score-btn"
+        onClick={handleLeft}
+        style={{
+          width: "100%",
+          padding: "14px 0",
+          background: "linear-gradient(135deg, #FF6B6B, #ee5a5a)",
+          border: "none",
+          borderRadius: 12,
+          color: "#fff",
+          fontFamily: "'Bebas Neue', sans-serif",
+          fontSize: 18,
+          letterSpacing: 3,
+          cursor: "pointer",
+          transition: "transform 0.1s, box-shadow 0.2s",
+          animation: leftPulse ? "pulseGlow 0.4s ease-out" : "none",
+          marginTop: "auto",
+        }}
+      >
+        + OOPS!
+      </button>
+
+      {gabriellaCount > 0 && (
+        <button
+          onClick={() => setGabriellaCount((c) => Math.max(0, c - 1))}
+          style={{
+            marginTop: 8,
+            background: "none",
+            border: "1px solid #333",
+            borderRadius: 8,
+            color: "#555",
+            fontFamily: "'Space Mono', monospace",
+            fontSize: 10,
+            padding: "4px 12px",
+            cursor: "pointer",
+          }}
+        >
+          undo
+        </button>
+      )}
+    </div>
+
+    {/* VS divider */}
+    <div style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 4,
+    }}>
+      <div style={{
+        width: 1,
+        flex: 1,
+        background: "linear-gradient(180deg, transparent, #333, transparent)",
+      }} />
+      <div style={{
+        fontFamily: "'Bebas Neue', sans-serif",
+        fontSize: 18,
+        color: "#FFE66D",
+        letterSpacing: 2,
+      }}>VS</div>
+      <div style={{
+        width: 1,
+        flex: 1,
+        background: "linear-gradient(180deg, transparent, #333, transparent)",
+      }} />
+    </div>
+
+    {/* RIGHT — Joel & Sabrina */}
+    <div style={{
+      flex: 1,
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      background: "linear-gradient(180deg, #0f1a19 0%, #0D0D0D 100%)",
+      borderRadius: 16,
+      border: leader === "right" ? "2px solid #4ECDC4" : "2px solid #1a1a1a",
+      padding: "16px 8px",
+      position: "relative",
+      overflow: "hidden",
+      transition: "border-color 0.3s",
+    }}>
+      <ConfettiBurst trigger={rightBurst} />
+
+      {leader === "right" && (
+        <div style={{
+          position: "absolute",
+          top: 8,
+          right: 8,
+          fontSize: 16,
+        }}>👑</div>
+      )}
+
+      <div style={{
+        fontFamily: "'Bebas Neue', sans-serif",
+        fontSize: 20,
+        color: "#4ECDC4",
+        letterSpacing: 2,
+        textAlign: "center",
+      }}>
+        JOEL &<br/>SABRINA
+      </div>
+
+      <div style={{
+        fontSize: 10,
+        color: "#666",
+        textAlign: "center",
+        fontFamily: "'Space Mono', monospace",
+        margin: "4px 0 2px",
+        lineHeight: 1.4,
+        padding: "0 4px",
+      }}>
+        confuse KTAF with<br/>KIPP NJ / Miami
+      </div>
+
+      <div style={{
+        fontFamily: "'Bebas Neue', sans-serif",
+        fontSize: 80,
+        color: "#F5F5F0",
+        lineHeight: 1,
+        margin: "auto 0",
+        animation: rightPulse ? "numberPop 0.3s ease" : "none",
+        textShadow: joelSabrinaCount > 0 ? "0 0 30px rgba(78,205,196,0.3)" : "none",
+      }}>
+        {joelSabrinaCount}
+      </div>
+
+      <button
+        className="score-btn"
+        onClick={handleRight}
+        style={{
+          width: "100%",
+          padding: "14px 0",
+          background: "linear-gradient(135deg, #4ECDC4, #3dbdb5)",
+          border: "none",
+          borderRadius: 12,
+          color: "#fff",
+          fontFamily: "'Bebas Neue', sans-serif",
+          fontSize: 18,
+          letterSpacing: 3,
+          cursor: "pointer",
+          transition: "transform 0.1s, box-shadow 0.2s",
+          animation: rightPulse ? "pulseGlowBlue 0.4s ease-out" : "none",
+          marginTop: "auto",
+        }}
+      >
+        + OOPS!
+      </button>
+
+      {joelSabrinaCount > 0 && (
+        <button
+          onClick={() => setJoelSabrinaCount((c) => Math.max(0, c - 1))}
+          style={{
+            marginTop: 8,
+            background: "none",
+            border: "1px solid #333",
+            borderRadius: 8,
+            color: "#555",
+            fontFamily: "'Space Mono', monospace",
+            fontSize: 10,
+            padding: "4px 12px",
+            cursor: "pointer",
+          }}
+        >
+          undo
+        </button>
+      )}
+    </div>
+  </div>
+
+  {/* Footer stats */}
+  <div style={{
+    padding: "8px 20px 24px",
+    textAlign: "center",
+  }}>
+    <div style={{
+      fontFamily: "'Space Mono', monospace",
+      fontSize: 11,
+      color: "#444",
+    }}>
+      Total mix-ups: {total}
+      {total >= 10 && " 🔥"}
+      {total >= 20 && " 💀"}
+    </div>
+
+    {total > 0 && (
+      <button
+        onClick={() => { setGabriellaCount(0); setJoelSabrinaCount(0); }}
+        style={{
+          marginTop: 8,
+          background: "none",
+          border: "1px solid #222",
+          borderRadius: 8,
+          color: "#444",
+          fontFamily: "'Space Mono', monospace",
+          fontSize: 10,
+          padding: "4px 16px",
+          cursor: "pointer",
+        }}
+      >
+        reset all
+      </button>
+    )}
+  </div>
+</div>
+```
+
+);
+}
